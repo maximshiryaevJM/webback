@@ -34,13 +34,14 @@ try {
     $userStatement = $db->prepare("insert into users
 (name, phone, email, birth_date, gender, biography)
 values (:name, :phone, :email, :birth_date, :gender, :biography)");
-    $userStatement->bindParam(':name', $_POST['name']);
-    $userStatement->bindParam(':phone', $_POST['phone']);
-    $userStatement->bindParam(':email', $_POST['email']);
-    $userStatement->bindParam(':birthdate', $_POST['birth_date']);
-    $userStatement->bindParam(':gender', $_POST['gender']);
-    $userStatement->bindParam(':biography', $_POST['biography']);
-    $userStatement->execute();
+$userStatement->execute(
+        [$_POST['name'],
+        $_POST['phone'],
+        $_POST['email'],
+        $_POST['birthdate'],
+        $_POST['gender'],
+        $_POST['biography']
+    ]);
 }
 catch(PDOException $e){
     print('Error : ' . $e->getMessage());
