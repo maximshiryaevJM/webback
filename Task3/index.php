@@ -31,9 +31,11 @@ $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
     [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
 try {
-    $userStatement = $db->prepare("insert into users
-(name, phone, email, birth_date, gender, biography)
-values (?, ?, ?, ?, ?, ?)");
+    $db->beginTransaction();
+    $userQuery = 'insert into users 
+(name, phone, email, birth_date, gender, biography) 
+values (?, ?, ?, ?, ?, ?)';
+    $userStatement = $db->prepare($userQuery);
 $userStatement->execute(
         [$_POST['name'],
         $_POST['phone'],
@@ -42,10 +44,19 @@ $userStatement->execute(
         $_POST['gender'],
         $_POST['biography']
     ]);
+
+    $languageQuery = 'insert into favorite_languages values (?, ?)';
+    $languageStatement = $db->prepare($languageQuery);
+    $userId = $db->lastInsertId();
+    foreach ($_POST['programmingLanguage'] as $language) {
+        $languageStatement->execute([$userId, $language]);
+    }
+
+    $db->commit();
 }
 catch(PDOException $e){
+    $db->rollBack();
     print('Error : ' . $e->getMessage());
-    print($e->errorInfo);
     exit();
 }
 
