@@ -33,7 +33,7 @@ $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
 try {
     $userStatement = $db->prepare("insert into users
 (name, phone, email, birth_date, gender, biography)
-values (:name, :phone, :email, :birth_date, :gender, :biography)");
+values (?, ?, ?, ?, ?, ?)");
 $userStatement->execute(
         [$_POST['name'],
         $_POST['phone'],
@@ -45,6 +45,7 @@ $userStatement->execute(
 }
 catch(PDOException $e){
     print('Error : ' . $e->getMessage());
+    print($e->errorInfo);
     exit();
 }
 
