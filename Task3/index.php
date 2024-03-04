@@ -25,7 +25,7 @@ if (!preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2, }$/", $_POST['e
     $errors = TRUE;
 }
 
-if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $_POST['email'])) {
+if (!preg_match("/^\d{2}-\d{2}-\d{4}$/", $_POST['email'])) {
     print('Неверно введена дата рождения.<br/>');
     $errors = TRUE;
 }
