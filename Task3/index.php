@@ -15,24 +15,36 @@ if (!preg_match("/^[a-zA-Z\s]{1,150}$/", $_POST['name'])) {
     $errors = TRUE;
 }
 
-if (!preg_match("/^\+\d{1,10}$/", $_POST['phone'])) {
+if (!preg_match("/^\+\d{1,12}$/", $_POST['phone'])) {
     print('Неверно введен номер телефона.<br/>');
     $errors = TRUE;
 }
 
-if (!preg_match("/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2, }$/", $_POST['email'])) {
+if (!preg_match("/^([a-z0-9_.-]+)@([\da-z.-]+)\.([a-z.]{2,6})$/", $_POST['email'])) {
     print('Неверно введен email.<br/>');
+    print ($_POST['email']);
     $errors = TRUE;
 }
 
-if (!preg_match("/^\d{2}-\d{2}-\d{4}$/", $_POST['email'])) {
+if (!preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $_POST['birthdate'])) {
     print('Неверно введена дата рождения.<br/>');
+    print ($_POST['birthdate']);
     $errors = TRUE;
 }
 
-if ($_POST['gender'] != 'male' || $_POST['gender'] != 'female') {
+if ($_POST['gender'] != 'male' && $_POST['gender'] != 'female') {
+    print ($_POST['gender']);
     print('Неверно введен пол.<br/>');
     $errors = TRUE;
+}
+
+$validOptions = ['Pascal', 'C', 'C++', 'JavaScript', 'PHP', 'Python', 'Java', 'Haskel', 'Clojure', 'Prolog', 'Scala'];
+if (isset($_POST['programmingLanguage'])) {
+    $invalidOptions = array_diff($_POST['programmingLanguage'], $validOptions);
+    if (!empty($invalidOptions)) {
+        print('Неверно выбраны языки программирования.<br/>');
+        $errors = TRUE;
+    }
 }
 
 if (!preg_match("/^[a-zA-Z0-9\s.,!?'\"()]+$/", $_POST['biography'])) {
@@ -55,14 +67,14 @@ try {
 (name, phone, email, birth_date, gender, biography) 
 values (?, ?, ?, ?, ?, ?)';
     $userStatement = $db->prepare($userQuery);
-$userStatement->execute(
+    $userStatement->execute(
         [$_POST['name'],
-        $_POST['phone'],
-        $_POST['email'],
-        $_POST['birthdate'],
-        $_POST['gender'],
-        $_POST['biography']
-    ]);
+            $_POST['phone'],
+            $_POST['email'],
+            $_POST['birthdate'],
+            $_POST['gender'],
+            $_POST['biography']
+        ]);
 
     $userId = $db->lastInsertId();
 
@@ -84,6 +96,7 @@ $userStatement->execute(
 catch(PDOException $e){
     $db->rollBack();
     print('Error : ' . $e->getMessage());
+    print($e->getTraceAsString());
     exit();
 }
 
