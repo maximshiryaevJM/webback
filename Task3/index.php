@@ -96,7 +96,6 @@ values (?, ?, ?, ?, ?, ?)';
 catch(PDOException $e){
     $db->rollBack();
     print('Error : ' . $e->getMessage());
-    print($e->getTraceAsString());
     exit();
 }
 
