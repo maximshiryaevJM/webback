@@ -58,6 +58,10 @@ if (isset($_POST['programmingLanguage'])) {
         $errors = TRUE;
     }
 }
+else {
+    print('Выберите языки программирования.<br/>');
+    $errors = TRUE;
+}
 
 if ($errors) {
     exit();
