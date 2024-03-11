@@ -22,23 +22,35 @@ if (!preg_match("/^\+\d{1,12}$/", $_POST['phone'])) {
 
 if (!preg_match("/^([a-z0-9_.-]+)@([\da-z.-]+)\.([a-z.]{2,6})$/", $_POST['email'])) {
     print('Неверно введен email.<br/>');
-    print ($_POST['email']);
     $errors = TRUE;
 }
 
 if (!preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $_POST['birthdate'])) {
     print('Неверно введена дата рождения.<br/>');
-    print ($_POST['birthdate']);
     $errors = TRUE;
 }
 
-if ($_POST['gender'] != 'male' && $_POST['gender'] != 'female') {
-    print ($_POST['gender']);
+if (empty($_POST['gender']) || $_POST['gender'] != 'male' && $_POST['gender'] != 'female') {
     print('Неверно введен пол.<br/>');
     $errors = TRUE;
 }
 
-$validOptions = ['Pascal', 'C', 'C++', 'JavaScript', 'PHP', 'Python', 'Java', 'Haskel', 'Clojure', 'Prolog', 'Scala'];
+if (!preg_match("/^[a-zA-Z0-9\s.,!?'\"()]+$/", $_POST['biography'])) {
+    print('Неверный формат биографии.<br/>');
+    $errors = TRUE;
+}
+
+$user = 'u67321';
+$pass = '6300196';
+$db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
+    [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$testStatement = $db->prepare("select language from favorite_languages");
+$testStatement->execute();
+$validOptions = [];
+foreach ($testStatement as $row) {
+    $validOptions[] = $row['language'];
+}
+
 if (isset($_POST['programmingLanguage'])) {
     $invalidOptions = array_diff($_POST['programmingLanguage'], $validOptions);
     if (!empty($invalidOptions)) {
@@ -47,19 +59,9 @@ if (isset($_POST['programmingLanguage'])) {
     }
 }
 
-if (!preg_match("/^[a-zA-Z0-9\s.,!?'\"()]+$/", $_POST['biography'])) {
-    print('Неверный формат биографии.<br/>');
-    $errors = TRUE;
-}
-
 if ($errors) {
     exit();
 }
-
-$user = 'u67321';
-$pass = '6300196';
-$db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
-    [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
 try {
     $db->beginTransaction();
