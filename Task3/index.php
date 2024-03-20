@@ -40,6 +40,11 @@ if (!preg_match("/^[a-zA-Z0-9\s.,!?'\"()]+$/", $_POST['biography'])) {
     $errors = TRUE;
 }
 
+if (empty($_POST['agreement'])) {
+    print('Необходимо ознакомиться с контрактом.<br/>');
+    $errors = TRUE;
+}
+
 $user = 'u67321';
 $pass = '6300196';
 $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
