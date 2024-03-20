@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $errors['gender'] = !empty($_COOKIE['gender_error']);
     $errors['programmingLanguage'] = !empty($_COOKIE['programmingLanguage_error']);
     $errors['biography'] = !empty($_COOKIE['biography_error']);
+    $errors['agreement'] = !empty($_COOKIE['agreement_error']);
 
     // Выдаем сообщения об ошибках.
     if ($errors['name']) {
@@ -54,12 +55,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $messages[] = '<div class="error">Выберите пол</div>';
     }
     if ($errors['programmingLanguage']) {
-        setcookie('programmingLanguages_error', '', 100000);
+        setcookie('programmingLanguage_error', '', 100000);
         $messages[] = '<div class="error">Выберите язык</div>';
     }
     if ($errors['biography']) {
         setcookie('biography_error', '', 100000);
         $messages[] = '<div class="error">Поле биография может содержать только буквы, цифры, символы .,!?\'\"()</div>';
+    }
+    if ($errors['agreement']) {
+        setcookie('agreement_error', '', 100000);
+        $messages[] = '<div class="error">Необходимо ознакомиться с контрактом</div>';
     }
 
     // Складываем предыдущие значения полей в массив, если есть.
@@ -71,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['gender'] = empty($_COOKIE['gender_value']) ? '' : $_COOKIE['gender_value'];
     $values['programmingLanguage'] = empty($_COOKIE['programmingLanguage_value']) ? '' : json_decode($_COOKIE['programmingLanguage_value']);
     $values['biography'] = empty($_COOKIE['biography_value']) ? '' : $_COOKIE['biography_value'];
+    $values['agreement'] = empty($_COOKIE['agreement_value']) ? '' : $_COOKIE['agreement_value'];
 
     $user = 'u67321';
     $pass = '6300196';
@@ -135,6 +141,13 @@ else {
     else {
         setcookie('biography_value', $_POST['biography'], time() + 30 * 24 * 60 * 60);
     }
+    if (!isset($_POST['agreement'])) {
+        setcookie('agreement_error', '1', time() + 24 * 60 * 60);
+        $errors = TRUE;
+    }
+    else {
+        setcookie('agreement_value', $_POST['agreement'], time() + 30 * 24 * 60 * 60);
+    }
 
     $user = 'u67321';
     $pass = '6300196';
@@ -159,6 +172,7 @@ else {
         $plError = TRUE;
     }
     if ($plError) {
+        setcookie('programmingLanguage_error', '1', time() + 24 * 60 * 60);
         $errors = TRUE;
     }
     else {
@@ -179,6 +193,7 @@ else {
         setcookie('gender_error', '', 100000);
         setcookie('programmingLanguage_error', '', 100000);
         setcookie('biography_error', '', 100000);
+        setcookie('agreement_error', '', 100000);
     }
 
     $user = 'u67321';

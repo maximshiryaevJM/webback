@@ -31,7 +31,7 @@ if (!empty($messages)) {
             <label for="name">ФИО:</label>
             <input type="text" class="form-control <?php
             if ($errors['name']) {
-                    print 'error';
+                print 'error';
             }
             ?>" value="<?php
             print $values['name'];
@@ -44,7 +44,7 @@ if (!empty($messages)) {
             if ($errors['phone']) {
                 print 'error';
             }
-            ?>"value="<?php
+            ?>" value="<?php
             print $values['phone'];
             ?>" id="phone" name="phone">
         </div>
@@ -73,45 +73,49 @@ if (!empty($messages)) {
 
         <div class="form-group">
             <label>Пол:</label>
-            <div class="form-check <?php
+            <div class="check wrapper <?php
             if ($errors['gender']) {
                 print 'error';
             }
             ?>">
-                <input type="radio" class="form-check-input" id="male" name="gender" value="male" <?php
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="male" name="gender" value="male" <?php
                     if ($values['gender'] == 'male') {
                         print 'checked';
                     }
                     ?>>
-                <label class="form-check-label" for="male">Мужской</label>
-            </div>
-            <div class="form-check">
-                <input type="radio" class="form-check-input" id="female" name="gender" value="female" <?php
+                    <label class="form-check-label" for="male">Мужской</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="female" name="gender" value="female" <?php
                     if ($values['gender'] == 'female') {
                         print 'checked';
                     }
                     ?>>
-                <label class="form-check-label" for="female">Женский</label>
+                    <label class="form-check-label" for="female">Женский</label>
+                </div>
             </div>
         </div>
 
         <div class="form-group">
             <label for="programmingLanguage">Любимый язык программирования:</label>
-            <select multiple class="form-control" id="programmingLanguage" name="programmingLanguage[]">
+            <select multiple class="form-control <?php
+            if ($errors['programmingLanguage']) {
+                print 'error';
+            }
+            ?>" id="programmingLanguage" name="programmingLanguage[]">
                 <?php
                 $selected = $values['programmingLanguage'];
                 if (!empty($selected)) {
-                    foreach($validOptions as $option) {
+                    foreach ($validOptions as $option) {
                         if (in_array($option, $selected)) {
                             print "<option selected>$option</option>";
-                        }
-                        else {
+                        } else {
                             print "<option>$option</option>";
                         }
                     }
-                }
-                else {
-                    foreach ($options as $option) {
+                } else {
+                    foreach ($validOptions as $option) {
                         print "<option>$option</option>";
                     }
                 }
@@ -130,8 +134,16 @@ if (!empty($messages)) {
                 ?></textarea>
         </div>
 
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="agreement" name="agreement" required>
+        <div class="form-check <?php
+        if ($errors['agreement']) {
+            print 'error';
+        }
+        ?>">
+            <input type="checkbox" class="form-check-input" id="agreement" name="agreement" <?php
+            if (!empty($values['agreement'])) {
+                print 'checked';
+            }
+            ?>>
             <label class="form-check-label" for="agreement">С контрактом ознакомлен(а)</label>
         </div>
 
