@@ -1,4 +1,5 @@
 <?php
+include '/home/u67321/www/variables.php';
 header('Content-Type: text/html; charset=UTF-8');
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
@@ -45,8 +46,6 @@ if (empty($_POST['agreement'])) {
     $errors = TRUE;
 }
 
-$user = 'u67321';
-$pass = '6300196';
 $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
     [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $testStatement = $db->prepare("select language from favorite_languages");

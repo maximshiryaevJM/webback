@@ -1,5 +1,5 @@
 <?php
-
+include '/home/u67321/www/variables.php';
 /**
  * Файл login.php для не авторизованного пользователя выводит форму логина.
  * При отправке формы проверяет логин/пароль и создает сессию,
@@ -40,8 +40,6 @@ else {
 
     $isAuth = FALSE;
     $userId = -1;
-    $user = 'u67321';
-    $pass = '6300196';
     $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
         [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     try {

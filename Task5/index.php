@@ -1,4 +1,5 @@
 <?php
+include '/home/u67321/www/variables.php';
 /**
  * Реализовать возможность входа с паролем и логином с использованием
  * сессии для изменения отправленных данных в предыдущей задаче,
@@ -38,35 +39,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if ($errors['name']) {
         // Удаляем куку, указывая время устаревания в прошлом.
         setcookie('name_error', '', 100000);
+        setcookie('name_value', '', 100000);
+
         // Выводим сообщение.
         $messages[] = '<div class="error">Поле имя должно быть не длиннее 150 символов и содержать только пробелы и буквы</div>';
     }
     if ($errors['phone']) {
         setcookie('phone_error', '', 100000);
+        setcookie('phone_value', '', 100000);
+
         $messages[] = '<div class="error">Поле телефон должно быть не длиннее 12 символов и содержать только цифры и знак +</div>';
     }
     if ($errors['email']) {
         setcookie('email_error', '', 100000);
+        setcookie('email_value', '', 100000);
+
         $messages[] = '<div class="error">Неверный формат email</div>';
     }
     if ($errors['birthdate']) {
         setcookie('birthdate_error', '', 100000);
+        setcookie('birthdate_value', '', 100000);
+
         $messages[] = '<div class="error">Неверный формат даты, используйте формат yyyy-mm-dd</div>';
     }
     if ($errors['gender']) {
         setcookie('gender_error', '', 100000);
+        setcookie('gender_value', '', 100000);
+
         $messages[] = '<div class="error">Выберите пол</div>';
     }
     if ($errors['programmingLanguage']) {
         setcookie('programmingLanguage_error', '', 100000);
+        setcookie('programmingLanguage_value', '', 100000);
+
         $messages[] = '<div class="error">Выберите язык</div>';
     }
     if ($errors['biography']) {
         setcookie('biography_error', '', 100000);
+        setcookie('biography_value', '', 100000);
+
         $messages[] = '<div class="error">Поле биография может содержать только буквы, цифры, символы .,!?\'\"()</div>';
     }
     if ($errors['agreement']) {
         setcookie('agreement_error', '', 100000);
+        setcookie('agreement_value', '', 100000);
+
         $messages[] = '<div class="error">Необходимо ознакомиться с контрактом</div>';
     }
 
@@ -82,6 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['biography'] = empty($_COOKIE['biography_value']) ? '' : strip_tags($_COOKIE['biography_value']);
     $values['agreement'] = empty($_COOKIE['agreement_value']) ? '' : strip_tags($_COOKIE['agreement_value']);
 
+    $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
+        [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $testStatement = $db->prepare("select language from favorite_languages");
+    $testStatement->execute();
+    $validOptions = [];
+    foreach ($testStatement as $row) {
+        $validOptions[] = strip_tags($row['language']);
+    }
+
     // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
     // ранее в сессию записан факт успешного логина.
     if (empty($errors) && !empty($_COOKIE[session_name()]) &&
@@ -90,10 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         // и заполнить переменную $values,
         // предварительно санитизовав.
 
-        $user = 'u67321';
-        $pass = '6300196';
-        $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
-            [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
         try {
             $userStmt = $db->prepare("select a.* from users a join usert5 b on a.user_id = b.id where b.id = ?");
             $userStmt->execute([$_SESSION['id']]);
@@ -174,8 +196,6 @@ else {
     }
     setcookie('agreement_value', $_POST['agreement'], time() + 30 * 24 * 60 * 60);
 
-    $user = 'u67321';
-    $pass = '6300196';
     $db = new PDO('mysql:host=localhost;dbname=u67321', $user, $pass,
         [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     $testStatement = $db->prepare("select language from favorite_languages");
@@ -253,8 +273,7 @@ else {
         try {
             $saveStmt = $db->prepare("insert into usert5 (id, login, password) values (?, ?, ?)");
             $saveStmt->execute([$id, $login, md5($pass)]);
-        } catch
-        (PDOException $e) {
+        } catch (PDOException $e) {
             $db->rollBack();
             print('Error : ' . $e->getMessage());
             exit();
