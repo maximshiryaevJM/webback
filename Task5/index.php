@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (!empty($_COOKIE['save'])) {
         setcookie('save', '', 100000);
         setcookie('login', '', 100000);
-        setcookie('pass', '', 100000);
         $messages[] = 'Спасибо, результаты сохранены.';
         if (!empty($_COOKIE['pass'])) {
             $messages[] = sprintf('Вы можете <a href="login.php">войти</a> с логином <strong>%s</strong>
@@ -22,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
                 strip_tags($_COOKIE['login']),
                 strip_tags($_COOKIE['pass']));
         }
+        setcookie('pass', '', 100000);
+
     }
 
     // Складываем признак ошибок в массив.
@@ -95,7 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['email'] = empty($_COOKIE['email_value']) ? '' : strip_tags($_COOKIE['email_value']);
     $values['birthdate'] = empty($_COOKIE['birthdate_value']) ? '' : strip_tags($_COOKIE['birthdate_value']);
     $values['gender'] = empty($_COOKIE['gender_value']) ? '' : strip_tags($_COOKIE['gender_value']);
-    $values['programmingLanguage'] = empty($_COOKIE['programmingLanguage_value']) ? '' : strip_tags(json_decode($_COOKIE['programmingLanguage_value']));
+    $plValues = json_decode($_COOKIE['programmingLanguage_value']);
+    if (!empty($plValues)) {
+        foreach ($plValues as $plValue) {
+            $plValue = strip_tags($plValue);
+        }
+    }
+    $values['programmingLanguage'] = $plValues;
     $values['biography'] = empty($_COOKIE['biography_value']) ? '' : strip_tags($_COOKIE['biography_value']);
     $values['agreement'] = empty($_COOKIE['agreement_value']) ? '' : strip_tags($_COOKIE['agreement_value']);
 
@@ -260,9 +267,9 @@ else {
     } else {
         // Генерируем уникальный логин и пароль.
         // TODO: сделать механизм генерации, например функциями rand(), uniquid(), md5(), substr().
-        $id = uniqid();
-        $login = '123';
-        $pass = '123';
+        $id = mt_rand(1, 100000000);
+        $login = 'user' . $id;
+        $pass = substr(str_shuffle("!@#$%^&*()-_+=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 12);
         // Сохраняем в Cookies.
         setcookie('login', $login);
         setcookie('pass', $pass);
@@ -271,11 +278,46 @@ else {
         // ...
 
         try {
+            $db->beginTransaction();
             $saveStmt = $db->prepare("insert into usert5 (id, login, password) values (?, ?, ?)");
             $saveStmt->execute([$id, $login, md5($pass)]);
+
+            $userQuery = 'insert into users 
+(name, phone, email, birth_date, gender, biography, user_id) 
+values (?, ?, ?, ?, ?, ?, ?)';
+            $userStatement = $db->prepare($userQuery);
+            $userStatement->execute(
+                [$_POST['name'],
+                    $_POST['phone'],
+                    $_POST['email'],
+                    $_POST['birthdate'],
+                    $_POST['gender'],
+                    $_POST['biography'],
+                    $id
+                ]);
+
+            $userId = $db->lastInsertId();
+
+            $languageQuery = 'select id from favorite_languages where language = ?';
+            $linkQuery = 'insert into users_languages (user_id, language_id) values (?, ?)';
+            $languageStatement = $db->prepare($languageQuery);
+            $linkStatement = $db->prepare($linkQuery);
+            foreach ($_POST['programmingLanguage'] as $language) {
+                $languageStatement->execute([$language]);
+                $languageId = $languageStatement->fetchColumn();
+                print_r($language);
+                print_r($languageId);
+                if (!$languageId) {
+                    throw new PDOException("Could not find presented language");
+                }
+                $linkStatement->execute([$userId, $languageId]);
+            }
+
+            $db->commit();
         } catch (PDOException $e) {
             $db->rollBack();
-            print('Error : ' . $e->getMessage());
+            print('Error trace : ' . $e->getTraceAsString());
+            print('Error message : ' . $e->getMessage());
             exit();
         }
     }
