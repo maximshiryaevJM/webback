@@ -1,10 +1,5 @@
 <?php
 include '/home/u67321/www/variables.php';
-/**
- * Реализовать возможность входа с паролем и логином с использованием
- * сессии для изменения отправленных данных в предыдущей задаче,
- * пароль и логин генерируются автоматически при первоначальной отправке формы.
- */
 
 header('Content-Type: text/html; charset=UTF-8');
 
@@ -265,17 +260,12 @@ else {
             exit();
         }
     } else {
-        // Генерируем уникальный логин и пароль.
-        // TODO: сделать механизм генерации, например функциями rand(), uniquid(), md5(), substr().
         $id = mt_rand(1, 100000000);
         $login = 'user' . $id;
         $pass = substr(str_shuffle("!@#$%^&*()-_+=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 12);
         // Сохраняем в Cookies.
         setcookie('login', $login);
         setcookie('pass', $pass);
-
-        // TODO: Сохранение данных формы, логина и хеш md5() пароля в базу данных.
-        // ...
 
         try {
             $db->beginTransaction();
