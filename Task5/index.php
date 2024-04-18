@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['email'] = empty($_COOKIE['email_value']) ? '' : strip_tags($_COOKIE['email_value']);
     $values['birthdate'] = empty($_COOKIE['birthdate_value']) ? '' : strip_tags($_COOKIE['birthdate_value']);
     $values['gender'] = empty($_COOKIE['gender_value']) ? '' : strip_tags($_COOKIE['gender_value']);
-    $plValues = json_decode($_COOKIE['programmingLanguage_value']);
+    $plValues = json_decode(empty($_COOKIE['programmingLanguage_value']) ? '' : $_COOKIE['programmingLanguage_value']);
     if (!empty($plValues)) {
         foreach ($plValues as $plValue) {
             $plValue = strip_tags($plValue);
@@ -114,9 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     // ранее в сессию записан факт успешного логина.
     if (empty($errors) && !empty($_COOKIE[session_name()]) &&
         session_start() && !empty($_SESSION['login'])) {
-        // TODO: загрузить данные пользователя из БД
-        // и заполнить переменную $values,
-        // предварительно санитизовав.
 
         try {
             $userStmt = $db->prepare("select a.* from users a join usert5 b on a.user_id = b.id where b.id = ?");
@@ -131,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $values['biography'] = strip_tags($_COOKIE['biography_value']);
             $values['agreement'] = strip_tags($_COOKIE['agreement_value']);
 
-            $testStatement = $db->prepare("select language from favorite_languages");
+            $testStatement = $db->prepare("select language from favorite_languages where ");
             $testStatement->execute();
             $pLang = [];
             foreach ($testStatement as $row) {
@@ -241,8 +238,6 @@ else {
     // Проверяем меняются ли ранее сохраненные данные или отправляются новые.
     if (!empty($_COOKIE[session_name()]) &&
         session_start() && !empty($_SESSION['login'])) {
-        // TODO: перезаписать данные в БД новыми данными,
-        // кроме логина и пароля.
 
         try {
             $updateStmt = $db->prepare("update users set name = ?, phone = ?, email = ?, birth_date = ?, gender = ?, biography = ? where user_id = ?");

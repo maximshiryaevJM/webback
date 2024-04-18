@@ -4,16 +4,13 @@ include '/home/u67321/www/variables.php';
 header('Content-Type: text/html; charset=UTF-8');
 
 $session_started = false;
-if (session_start() && $_COOKIE[session_name()]) {
+if (session_start()) {
     $session_started = true;
-    if (!empty($_SESSION['login'])) {
+    if (!empty($_SESSION['login']) && $_COOKIE[session_name()]) {
         header('Location: ./');
         exit();
     }
 }
-
-setcookie('test',$_POST['logout'] , time() + 24 * 60 * 60);
-
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     ?>
@@ -35,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             print '<div class="error">Логин или пароль неверные</div>';
             setcookie('error', '', 100000);
         }
-        print $_COOKIE['test'];
         ?>
     </div>
     <?php
