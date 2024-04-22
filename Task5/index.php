@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $langs = $db->prepare("select language from favorite_languages where user_id = ?");
             $langs->execute([$formId]);
             $pLang = [];
-            foreach ($testStatement as $row) {
+            foreach ($langs as $row) {
                 $pLang[] = strip_tags($row['language']);
             }
 
@@ -282,8 +282,8 @@ else {
         $login = 'user' . $id;
         $pass = substr(str_shuffle("!@#$%^&*()-_+=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 12);
         // Сохраняем в Cookies.
-        setcookie('login', $login);
-        setcookie('pass', $pass);
+        setcookie('login', $login, time() + 24 * 60 * 60);
+        setcookie('pass', $pass, time() + 24 * 60 * 60);
 
         try {
             $db->beginTransaction();
