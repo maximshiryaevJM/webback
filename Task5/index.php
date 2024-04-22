@@ -120,16 +120,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $userStmt->execute([$_SESSION['id']]);
             $row = $userStmt->fetch();
 
-            $values['name'] = strip_tags($_COOKIE['name_value']);
-            $values['phone'] = strip_tags($_COOKIE['phone_value']);
-            $values['email'] = strip_tags($_COOKIE['email_value']);
-            $values['birthdate'] = strip_tags($_COOKIE['birthdate_value']);
-            $values['gender'] = strip_tags($_COOKIE['gender_value']);
-            $values['biography'] = strip_tags($_COOKIE['biography_value']);
-            $values['agreement'] = strip_tags($_COOKIE['agreement_value']);
+            $values['name'] = strip_tags($row['name']);
+            $values['phone'] = strip_tags($row['phone']);
+            $values['email'] = strip_tags($row['email']);
+            $values['birthdate'] = strip_tags($row['birthdate']);
+            $values['gender'] = strip_tags($row['gender']);
+            $values['biography'] = strip_tags($row['biography']);
 
-            $testStatement = $db->prepare("select language from favorite_languages where ");
-            $testStatement->execute();
+            $formId = $row['id'];
+
+            $langs = $db->prepare("select language from favorite_languages where user_id = ?");
+            $testStatement->execute([$formId]);
             $pLang = [];
             foreach ($testStatement as $row) {
                 $pLang[] = strip_tags($row['language']);
@@ -250,6 +251,28 @@ else {
                 $_POST['biography'],
                 $_SESSION['id']
             ]);
+
+            $getFormId = $db->prepare("select id from users where user_id = ?");
+            $getFormId->execute([$_SESSION['id']]);
+
+            $formId = $getFormId->fetchColumn();
+
+            $deleteLangs = $db->prepare("delete from users_languages where user_id = ?");
+            $deleteLangs->execute([$formId]);
+
+            $languageQuery = 'select id from favorite_languages where language = ?';
+            $linkQuery = 'insert into users_languages (user_id, language_id) values (?, ?)';
+            $languageStatement = $db->prepare($languageQuery);
+            $linkStatement = $db->prepare($linkQuery);
+            foreach ($_POST['programmingLanguage'] as $language) {
+                $languageStatement->execute([$language]);
+                $languageId = $languageStatement->fetchColumn();
+                if (!$languageId) {
+                    throw new PDOException("Could not find presented language");
+                }
+                $linkStatement->execute([$formId, $languageId]);
+            }
+
         } catch (PDOException $e) {
             print('Error : ' . $e->getMessage());
             exit();
