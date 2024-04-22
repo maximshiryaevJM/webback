@@ -130,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $formId = $row['id'];
 
             $langs = $db->prepare("select language from favorite_languages where user_id = ?");
-            $testStatement->execute([$formId]);
+            $langs->execute([$formId]);
             $pLang = [];
             foreach ($testStatement as $row) {
                 $pLang[] = strip_tags($row['language']);
