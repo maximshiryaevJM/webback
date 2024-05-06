@@ -61,5 +61,4 @@ function deleteLanguagesByUserId($db, $id) {
         print('Error : ' . $e->getMessage());
         exit();
     }
-
 }

@@ -91,3 +91,42 @@ function getFormId($db, $id) {
     }
     return $getFormId->fetchColumn();
 }
+
+function findAllFormData($db) {
+    try {
+        $getFormId = $db->prepare("select * from users");
+        $getFormId->execute();
+    } catch (PDOException $e) {
+        print('Error : ' . $e->getMessage());
+        exit();
+    }
+    return $getFormId->fetchALl();
+}
+
+function deleteUserById($db, $id) {
+    try {
+        $deleteStmt = $db->prepare("delete from users where id = ?");
+        $deleteStmt->execute([$id]);
+    } catch (PDOException $e) {
+        print('Error : ' . $e->getMessage());
+        exit();
+    }
+}
+
+function updateUserById($db, $id, $name, $phone, $email, $birthdate, $gender, $biography){
+    try {
+        $updateStmt = $db->prepare("update users set name = ?, phone = ?, email = ?, birth_date = ?, gender = ?, biography = ? where id = ?");
+        $updateStmt->execute([
+            $name,
+            $phone,
+            $email,
+            $birthdate,
+            $gender,
+            $biography,
+            $id
+        ]);
+    } catch (PDOException $e) {
+        print('Error : ' . $e->getMessage());
+        exit();
+    }
+}
