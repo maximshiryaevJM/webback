@@ -62,3 +62,18 @@ function deleteLanguagesByUserId($db, $id) {
         exit();
     }
 }
+
+function findCountByLanguage($db) {
+    try {
+        $stmt = $db->prepare("select l.language as language, count(*) as c from favorite_languages l join users_languages u on u.language_id = l.id group by language");
+        $stmt->execute();
+        $statistics = [];
+        foreach ($stmt as $row) {
+            $statistics[$row['language']] = $row['c'];
+        }
+    } catch (PDOException $e) {
+        print('Error : ' . $e->getMessage());
+        exit();
+    }
+    return $statistics;
+}

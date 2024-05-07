@@ -13,7 +13,7 @@
         <div class="col">
             <?php
             foreach ($users as $user) {
-                echo '<h5> Введенные данные с id ' .$user['id']. ' пользователя ' .$user['name']. '</h5>';
+                echo '<h5> Введенные данные с id ' . $user['id'] . ' пользователя ' . $user['name'] . '</h5>';
                 echo '<form class="form-inline" method="post" action="">';
                 echo '<input type="hidden" name="id" value="' . $user['id'] . '">';
                 echo '<div class="form-group mr-2">';
@@ -62,6 +62,29 @@
                 echo '<hr>';
             }
             ?>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h1>Статистика по любимым языкам</h1>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Язык</th>
+                    <th>Количество</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                foreach ($statistics as $language => $count) {
+                    echo "<tr>";
+                    echo "<td>$language</td>";
+                    echo "<td>$count</td>";
+                    echo "</tr>";
+                }
+                ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

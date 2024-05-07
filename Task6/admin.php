@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 
     $validLanguages = findAllLanguages($db);
+    $statistics = findCountByLanguage($db);
 
     if (isset($_COOKIE['edit'])) {
         setcookie('error', '', 100000);
