@@ -23,6 +23,84 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 
     // Складываем признак ошибок в массив.
+    $errors = handleErrors($messages);
+
+    // Складываем предыдущие значения полей в массив, если есть.
+    // При этом санитизуем все данные для безопасного отображения в браузере.
+    $values = restoreValues($db);
+    $validOptions = findAllLanguages($db);
+
+    // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
+    // ранее в сессию записан факт успешного логина.
+    if (empty($errors) && !empty($_COOKIE[session_name()]) &&
+        session_start() && !empty($_SESSION['login'])) {
+
+       $row = findUserByUserId($db, $_SESSION['id']);
+
+        $values['name'] = strip_tags($row['name_value']);
+        $values['phone'] = strip_tags($row['phone_value']);
+        $values['email'] = strip_tags($row['email_value']);
+        $values['birthdate'] = strip_tags($row['birthdate_value']);
+        $values['gender'] = strip_tags($row['gender_value']);
+        $values['biography'] = strip_tags($row['biography_value']);
+        $values['agreement'] = strip_tags($row['agreement_value']);
+        $values['programmingLanguage'] = findAllLanguagesByUser($db, $row['id']);
+
+        printf('Вход с логином %s, id %d', $_SESSION['login'], $_SESSION['id']);
+    }
+
+    // Включаем содержимое файла form.php.
+    // В нем будут доступны переменные $messages, $errors и $values для вывода
+    // сообщений, полей с ранее заполненными данными и признаками ошибок.
+    include('form.php');
+} // Иначе, если запрос был методом POST, т.е. нужно проверить данные и сохранить их в XML-файл.
+else {
+    // Проверяем ошибки.
+    $errors = testForErrors($db);
+
+    if ($errors) {
+        // При наличии ошибок перезагружаем страницу и завершаем работу скрипта.
+        header('Location: index.php');
+        exit();
+    } else {
+        // Удаляем Cookies с признаками ошибок.
+        setcookie('name_error', '', 100000);
+        setcookie('phone_error', '', 100000);
+        setcookie('email_error', '', 100000);
+        setcookie('birthdate_error', '', 100000);
+        setcookie('gender_error', '', 100000);
+        setcookie('programmingLanguage_error', '', 100000);
+        setcookie('biography_error', '', 100000);
+        setcookie('agreement_error', '', 100000);
+    }
+
+    // Проверяем меняются ли ранее сохраненные данные или отправляются новые.
+    if (!empty($_COOKIE[session_name()]) &&
+        session_start() && !empty($_SESSION['login'])) {
+
+        updateUserByUserId($db, $_SESSION['id'], $_POST['name'], $_POST['phone'], $_POST['email'], $_POST['birthdate'], $_POST['gender'], $_POST['biography']);
+        $formId = getFormId($db, $_SESSION['id']);
+        deleteLanguagesByUserId($db, $formId);
+        saveLanguages($db, $_POST['programmingLanguage'], $formId);
+    } else {
+        $id = mt_rand(1, 100000000);
+        $login = 'user' . $id;
+        $pass = substr(str_shuffle("!@#$%^&*()-_+=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 12);
+        // Сохраняем в Cookies.
+        setcookie('login', $login, time() + 24 * 60 * 60);
+        setcookie('pass', $pass, time() + 24 * 60 * 60);
+
+        saveToUsert5($db, $id, $login, $pass);
+        $userId = saveToUsers($db, $id, $_POST['name'], $_POST['phone'], $_POST['email'], $_POST['birthdate'], $_POST['gender'], $_POST['biography']);
+
+        saveLanguages($db, $_POST['programmingLanguage'], $userId);
+    }
+    setcookie('save', '1');
+
+    header('Location: ./');
+}
+
+function handleErrors(&$messages) {
     $errors = array();
     $errors['name'] = !empty($_COOKIE['name_error']);
     $errors['phone'] = !empty($_COOKIE['phone_error']);
@@ -84,9 +162,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
         $messages[] = '<div class="error">Необходимо ознакомиться с контрактом</div>';
     }
+    return $errors;
+}
 
-    // Складываем предыдущие значения полей в массив, если есть.
-    // При этом санитизуем все данные для безопасного отображения в браузере.
+function restoreValues($db) {
     $values = array();
     $values['name'] = empty($_COOKIE['name_value']) ? '' : strip_tags($_COOKIE['name_value']);
     $values['phone'] = empty($_COOKIE['phone_value']) ? '' : strip_tags($_COOKIE['phone_value']);
@@ -103,34 +182,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $values['biography'] = empty($_COOKIE['biography_value']) ? '' : strip_tags($_COOKIE['biography_value']);
     $values['agreement'] = empty($_COOKIE['agreement_value']) ? '' : strip_tags($_COOKIE['agreement_value']);
 
-    $validOptions = findAllLanguages($db);
+    return $values;
+}
 
-    // Если нет предыдущих ошибок ввода, есть кука сессии, начали сессию и
-    // ранее в сессию записан факт успешного логина.
-    if (empty($errors) && !empty($_COOKIE[session_name()]) &&
-        session_start() && !empty($_SESSION['login'])) {
-
-       $row = findUserByUserId($db, $_SESSION['id']);
-
-        $values['name'] = strip_tags($row['name_value']);
-        $values['phone'] = strip_tags($row['phone_value']);
-        $values['email'] = strip_tags($row['email_value']);
-        $values['birthdate'] = strip_tags($row['birthdate_value']);
-        $values['gender'] = strip_tags($row['gender_value']);
-        $values['biography'] = strip_tags($row['biography_value']);
-        $values['agreement'] = strip_tags($row['agreement_value']);
-        $values['programmingLanguage'] = findAllLanguagesByUser($db, $row['id']);
-
-        printf('Вход с логином %s, id %d', $_SESSION['login'], $_SESSION['id']);
-    }
-
-    // Включаем содержимое файла form.php.
-    // В нем будут доступны переменные $messages, $errors и $values для вывода
-    // сообщений, полей с ранее заполненными данными и признаками ошибок.
-    include('form.php');
-} // Иначе, если запрос был методом POST, т.е. нужно проверить данные и сохранить их в XML-файл.
-else {
-    // Проверяем ошибки.
+function testForErrors($db) {
     $errors = FALSE;
     if (!preg_match("/^[a-zA-Z\s]{1,150}$/", $_POST['name'])) {
         // Выдаем куку на день с флажком об ошибке в поле fio.
@@ -191,45 +246,5 @@ else {
         $errors = TRUE;
     }
     setcookie('programmingLanguage_value', json_encode($_POST['programmingLanguage']), time() + 30 * 24 * 60 * 60);
-
-    if ($errors) {
-        // При наличии ошибок перезагружаем страницу и завершаем работу скрипта.
-        header('Location: index.php');
-        exit();
-    } else {
-        // Удаляем Cookies с признаками ошибок.
-        setcookie('name_error', '', 100000);
-        setcookie('phone_error', '', 100000);
-        setcookie('email_error', '', 100000);
-        setcookie('birthdate_error', '', 100000);
-        setcookie('gender_error', '', 100000);
-        setcookie('programmingLanguage_error', '', 100000);
-        setcookie('biography_error', '', 100000);
-        setcookie('agreement_error', '', 100000);
-    }
-
-    // Проверяем меняются ли ранее сохраненные данные или отправляются новые.
-    if (!empty($_COOKIE[session_name()]) &&
-        session_start() && !empty($_SESSION['login'])) {
-
-        updateUserByUserId($db, $_SESSION['id'], $_POST['name'], $_POST['phone'], $_POST['email'], $_POST['birthdate'], $_POST['gender'], $_POST['biography']);
-        $formId = getFormId($db, $_SESSION['id']);
-        deleteLanguagesByUserId($db, $formId);
-        saveLanguages($db, $_POST['programmingLanguage'], $formId);
-    } else {
-        $id = mt_rand(1, 100000000);
-        $login = 'user' . $id;
-        $pass = substr(str_shuffle("!@#$%^&*()-_+=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 12);
-        // Сохраняем в Cookies.
-        setcookie('login', $login, time() + 24 * 60 * 60);
-        setcookie('pass', $pass, time() + 24 * 60 * 60);
-
-        saveToUsert5($db, $id, $login, $pass);
-        $userId = saveToUsers($db, $id, $_POST['name'], $_POST['phone'], $_POST['email'], $_POST['birthdate'], $_POST['gender'], $_POST['biography']);
-
-        saveLanguages($db, $_POST['programmingLanguage'], $userId);
-    }
-    setcookie('save', '1');
-
-    header('Location: ./');
+    return $errors;
 }
